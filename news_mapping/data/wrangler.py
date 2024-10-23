@@ -118,7 +118,7 @@ def summarize_text(
         str: The summarized text.
     """
     time.sleep(
-        1.5
+        3
     )  # to avoid reaching maximum requests per seconds and tokens per minute
     client = Groq(api_key=api_key)
     chat_completion = client.chat.completions.create(
