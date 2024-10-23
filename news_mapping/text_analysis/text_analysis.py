@@ -120,7 +120,7 @@ class NewsProcess:
         dataframe["persons"] = (
             dataframe["persons"].apply(extract_inside_braces).apply(evaluate_string)
         )
-        dataframe = dataframe[dataframe.topics_person != {}]
+        dataframe = dataframe[(dataframe["topics"] != {}) & (dataframe["persons"] != {})]
 
         dataframe = dataframe.explode("persons")
 

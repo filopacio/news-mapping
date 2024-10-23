@@ -443,6 +443,19 @@ lxml = "*"
 soupsieve = "*"
 
 [[package]]
+name = "google-search-results"
+version = "2.4.2"
+description = "Scrape and search localized results from Google, Bing, Baidu, Yahoo, Yandex, Ebay, Homedepot, youtube at scale using SerpApi.com"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "google_search_results-2.4.2.tar.gz", hash = "sha256:603a30ecae2af8e600b22635757a6df275dad4b934f975e67878ccd640b78245"},
+]
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "groq"
 version = "0.11.0"
 description = "The official Python library for the groq API"
@@ -1621,4 +1634,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "26a7859274c03dabb0afe1f858cfbb44a38b893651d0a19a1f3131d9e9c53756"
+content-hash = "1f826a0ee6e6ebaa263a9974cfc08b4d9fe042da76decfb8038ef151bc2435e2"
