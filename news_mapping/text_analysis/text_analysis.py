@@ -10,8 +10,6 @@ from news_mapping.data.wrangler import (
 )
 
 from news_mapping.text_analysis.utils import (
-    contains_any_word,
-    if_contains_assign,
     evaluate_string,
     extract_inside_braces,
 )
@@ -75,18 +73,9 @@ class NewsProcess:
         )
         dataframe = dataframe[
             (dataframe["date"] >= pd.to_datetime(self.start_date))
-            & (dataframe["date"] <= self.end_date)
+            & (dataframe["date"] <= pd.to_datetime(self.end_date))
         ]
-
         dataframe["newspaper"] = dataframe["newspaper"].apply(lambda x: x["name"])
-        dataframe = dataframe[
-            dataframe["newspaper"].apply(contains_any_word, words=self.sources)
-        ].reset_index(drop=True)
-        dataframe["newspaper"] = dataframe["newspaper"].apply(
-            lambda row: if_contains_assign(
-                row=row, words=self.sources, keywords=self.sources
-            )
-        )
         dataframe["text"] = dataframe["link"].apply(
             lambda url: scrape_url(url=url, clean_with_genai=False)
         )
