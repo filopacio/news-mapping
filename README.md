@@ -13,7 +13,7 @@ The process has the following structure:
 - URL scraping with requests and BeatifulSoup
 - The corpus of the articles was cleaned with regex and LLM calls
 - Topic Modelling performed with LLM calls to get topics
-- Entit Recognition performed with LLM calls to get public persons mentioned in the articles
+- Entity Recognition performed with LLM calls to get public persons mentioned in the articles
 
 Example of News Mapping for the keyword "European Elections" on the main italian newspapers (only one newspaper given in the example)
 ![Example](resources/graph_rep.png)
