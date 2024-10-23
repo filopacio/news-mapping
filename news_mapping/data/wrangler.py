@@ -25,7 +25,7 @@ def obtain_topics(
         topics_string = f"L'argomento deve appartenere **solamente** ad una delle seguenti categorie: {topics_to_scrape}."
     else:
         # No restriction on topics if none are provided
-        topics_string = ""
+        topics_string = "The topic assigned cannot have more than 3 words!"
 
     chat_completion = client.chat.completions.create(
         messages=[
@@ -88,9 +88,9 @@ Non aggiungere nessun altro commento o testo oltre all'oggetto JSON. Segui **rig
 
 Il risultato dovrà essere **esclusivamente** un oggetto JSON con la seguente struttura:
 
-{{
-  "persons": ["<string> (lista dei nomi propri di personaggi pubblici menzionati, se presenti, altrimenti lista vuota)"]
-}}
+{{ 
+  "persons": "[<string> (lista dei nomi propri di personaggi pubblici menzionati, se presenti, altrimenti lista vuota)]"
+ }}
 
 Ecco il testo: {text}.
 """,
