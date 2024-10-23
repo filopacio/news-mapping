@@ -41,7 +41,6 @@ class NewsProcess:
         self.topics = topics
         self.start_date = start_date
         self.end_date = end_date
-        self.persons = None
         self.model = model
         self.query = query
 
@@ -114,8 +113,5 @@ class NewsProcess:
         dataframe['topics'] = dataframe['topics'].apply(lambda x: x['topic'])
         dataframe['persons'] = dataframe['persons'].apply(lambda x: x['persons'])
 
-        dataframe = dataframe.explode("persons")
-
-        self.persons = list(dataframe["persons"].unique())
 
         return dataframe
