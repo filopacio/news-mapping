@@ -15,5 +15,5 @@ The process has the following structure:
 - Topic Modelling performed with LLM calls to get topics
 - Entit Recognition performed with LLM calls to get public persons mentioned in the articles
 
-Example of News Mapping for the keyword "European Elections" on the main italian newspapers 
+Example of News Mapping for the keyword "European Elections" on the main italian newspapers (only one newspaper given in the example)
 ![Example](resources/graph_rep.png)
