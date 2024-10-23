@@ -1,9 +1,6 @@
 import pandas as pd
-from pathlib import Path
 from datetime import datetime
-from dotenv import load_dotenv, find_dotenv
 from dateutil.relativedelta import relativedelta
-
 
 from news_mapping.data.scraper import google_news_articles, scrape_url
 from news_mapping.data.wrangler import (
@@ -18,9 +15,6 @@ from news_mapping.text_analysis.utils import (
     evaluate_string,
     extract_inside_braces,
 )
-
-load_dotenv(find_dotenv())
-SOURCE_DIR = Path.cwd().parent
 
 
 class NewsProcess:
