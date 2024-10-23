@@ -30,7 +30,7 @@ class NewsProcess:
     articles from Google News, summarizes them, and extracts the main topics discussed,
     the person mentioned, and the newspapers discussing such topics and such persons in a certain
     time window, if specified (otherwise it will take as default last month).
-    It leverages groq API (free usage of many LLMs) and serp API to access Google News (free up to 75 calls per month)
+    It leverages groq API (free usage of many LLMs) and serp API to access Google News (free up to 100 calls per month)
     """
     def __init__(
             self,
