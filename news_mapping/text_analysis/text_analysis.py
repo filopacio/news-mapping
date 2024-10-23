@@ -111,6 +111,9 @@ class NewsProcess:
         )
         dataframe = dataframe[(dataframe["topics"] != {}) & (dataframe["persons"] != {})]
 
+        dataframe['topics'] = dataframe['topics'].apply(lambda x: x['topic'])
+        dataframe['persons'] = dataframe['persons'].apply(lambda x: x['persons'])
+
         dataframe = dataframe.explode("persons")
 
         self.persons = list(dataframe["persons"].unique())
