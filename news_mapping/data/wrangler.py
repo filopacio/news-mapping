@@ -5,7 +5,7 @@ from groq import Groq
 def obtain_topics_and_person(
     text: str,
     api_key: str,
-    topics_to_scrape: list,
+    topics_to_scrape: None,
     max_tokens: int = 1024,
     model: str = "llama3-70b-8192",
 ) -> str:
@@ -22,6 +22,13 @@ def obtain_topics_and_person(
         1.5
     )  # to avoid reaching maximum requests per seconds and tokens per minute
     client = Groq(api_key=api_key)
+
+    if topics_to_scrape:
+        topics_string = """L'argomento deve appartenere **solamente** ad una delle seguenti categorie: {topics_to_scrape}. 
+                            Se nessuno degli argomenti è correttamente riflesso nell'articolo, lascia il campo 
+                           'topic' vuoto. """
+    else:
+        topics_string = ""
 
     chat_completion = client.chat.completions.create(
         messages=[
@@ -42,8 +49,7 @@ Il risultato dovrà essere **esclusivamente** un oggetto JSON con la seguente st
   "persons": ["<string> (lista dei nomi propri di personaggi pubblici menzionati, se presenti, altrimenti lista vuota)"]
 }}
 
-L'argomento deve appartenere **solamente** ad una delle seguenti categorie: {topics_to_scrape}.
-Se nessuno degli argomenti è correttamente riflesso nell'articolo, lascia il campo 'topic' vuoto.
+{topics_string}
 
 Ecco il testo: {text}.
 """,
