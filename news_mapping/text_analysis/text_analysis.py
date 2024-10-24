@@ -98,7 +98,7 @@ class NewsProcess:
             dataframe["topics_persons"].apply(extract_inside_braces).apply(evaluate_string)
         )
 
-        dataframe = dataframe[(dataframe["topics_persons"] != {}) & (dataframe["persons"] != {})]
+        dataframe = dataframe[(dataframe["topics_persons"] != {})]
 
         dataframe['topics'] = dataframe['topics_persons'].apply(lambda x: x['topic'])
         dataframe['persons'] = dataframe['topics_persons'].apply(lambda x: x['persons'])
