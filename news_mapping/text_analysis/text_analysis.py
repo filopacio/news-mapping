@@ -59,6 +59,15 @@ class NewsProcess:
 
 
         dataframe = dataframe.rename(columns={"source": "newspaper"})
+        dataframe["date"] = pd.to_datetime(
+            dataframe["date"].apply(lambda x: x.split(",")[0]), format="%m/%d/%Y"
+        )
+        dataframe = dataframe[
+            (dataframe["date"] >= pd.to_datetime(self.start_date))
+            & (dataframe["date"] <= pd.to_datetime(self.end_date))
+            ]
+        dataframe["newspaper"] = dataframe["newspaper"].apply(lambda x: x["name"])
+
         return dataframe[["title", "newspaper", "link", "date"]]
 
     def process_articles(self, dataframe: pd.DataFrame):
@@ -67,14 +76,6 @@ class NewsProcess:
         output for relevant use.
         """
 
-        dataframe["date"] = pd.to_datetime(
-            dataframe["date"].apply(lambda x: x.split(",")[0]), format="%m/%d/%Y"
-        )
-        dataframe = dataframe[
-            (dataframe["date"] >= pd.to_datetime(self.start_date))
-            & (dataframe["date"] <= pd.to_datetime(self.end_date))
-        ]
-        dataframe["newspaper"] = dataframe["newspaper"].apply(lambda x: x["name"])
         dataframe["text"] = dataframe["link"].apply(
             lambda url: scrape_url(url=url, clean_with_genai=False)
         )
