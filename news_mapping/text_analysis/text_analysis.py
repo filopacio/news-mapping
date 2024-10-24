@@ -4,8 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from news_mapping.data.scraper import google_news_articles, scrape_url
 from news_mapping.data.wrangler import (
-    obtain_topics,
-    obtain_persons,
+    obtain_topics_and_person,
     summarize_text,
 )
 
@@ -87,32 +86,22 @@ class NewsProcess:
                 text=text, api_key=self.GROQ_API_KEY, model=self.model
             )
         )
-        dataframe["topics"] = dataframe["text_summary"].apply(
-            lambda text: obtain_topics(
+        dataframe["topics_persons"] = dataframe["text_summary"].apply(
+            lambda text: obtain_topics_and_person(
                 text=text,
                 api_key=self.GROQ_API_KEY,
                 topics_to_scrape=self.topics,
                 model=self.model,
             )
         )
-        dataframe["topics"] = (
-            dataframe["topics"].apply(extract_inside_braces).apply(evaluate_string)
+        dataframe["topics_persons"] = (
+            dataframe["topics_persons"].apply(extract_inside_braces).apply(evaluate_string)
         )
 
-        dataframe["persons"] = dataframe["text_summary"].apply(
-            lambda text: obtain_persons(
-                text=text,
-                api_key=self.GROQ_API_KEY,
-                model=self.model,
-            )
-        )
-        dataframe["persons"] = (
-            dataframe["persons"].apply(extract_inside_braces).apply(evaluate_string)
-        )
+        dataframe['topics'] = dataframe['topics_persons'].apply(lambda x: x['topic'])
+        dataframe['persons'] = dataframe['topics_persons'].apply(lambda x: x['persons'])
+
         dataframe = dataframe[(dataframe["topics"] != {}) & (dataframe["persons"] != {})]
-
-        dataframe['topics'] = dataframe['topics'].apply(lambda x: x['topic'])
-        dataframe['persons'] = dataframe['persons'].apply(lambda x: x['persons'])
 
 
         return dataframe
