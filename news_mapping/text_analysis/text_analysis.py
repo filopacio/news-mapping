@@ -131,45 +131,9 @@ class NewsProcess:
         # Map duplicated names into single one (e.g. when only surname is given)
         dataframe = dataframe.explode("persons")
         dataframe["persons"] = dataframe["persons"].astype(str)
+        dataframe['column_name'] = dataframe['column_name'].str.title()
         dataframe["persons"] = map_incomplete_to_full_names(dataframe["persons"])
         dataframe = dataframe.groupby(["title", "newspaper", "link",
                                        "date", "text", "topics"], as_index=False).agg({"persons": list})
 
         return dataframe
-
-
-
-#    def process_articles(self, dataframe: pd.DataFrame):
-#        """
-##       # From scraped articles, summarize them, obtain topics and persons mentioned in the articles, and prepare
-#       # output for relevant use.
-#        """
-#
-#        dataframe["text"] = dataframe["link"].apply(
-#            lambda url: scrape_url(url=url, clean_with_genai=False)
-#        )
-#        dataframe = dataframe[
-#           dataframe["text"].astype(str).apply(len) < 15000
-#        ].reset_index(drop=True)
-#        dataframe["text_summary"] = dataframe["text"].apply(
-#            lambda text: summarize_text(
-#                text=text, api_key=self.GROQ_API_KEY, model=self.model
-#            )
-#        )
-#        dataframe["topics_persons"] = dataframe["text_summary"].apply(
-#            lambda text: obtain_topics_and_person(
-#                text=text,
-#                api_key=self.GROQ_API_KEY,
-#                topics_to_scrape=self.topics,
- #               model=self.model,
- #           )
- #       )
- #       dataframe["topics_persons"] = (
-#            dataframe["topics_persons"].apply(extract_inside_braces).apply(evaluate_string)
-#        )
- #       dataframe = dataframe[(dataframe["topics_persons"] != {})]
-#
- #       dataframe['topics'] = dataframe['topics_persons'].apply(lambda x: x['topic'])
- #       dataframe['persons'] = dataframe['topics_persons'].apply(lambda x: x['persons'])
-#
-#        return dataframe

@@ -63,13 +63,10 @@ def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
     Returns:
         dataframe: The updated dataframe with clustered topics.
     """
-    # Get the list of topics from the dataframe
     topic_list = dataframe['topics'].tolist()
 
-    # Step 1: Vectorize the topics
     topic_vectors = vectorize_topics(topic_list)
 
-    # Step 2: Perform clustering based on predefined topics or not
     if topics is not None:
         # Use K-means clustering if predefined topics are provided
         num_clusters = len(topics) if len(topics) < len(topic_list) else len(topic_list)
@@ -78,19 +75,17 @@ def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
         # Use HDBSCAN clustering if no predefined topics
         dataframe['topic_cluster'] = hdbscan_clustering(topic_vectors)
 
-    # Step 3: Assign a representative topic to each cluster
     clustered_topics = []
     for cluster_label in sorted(dataframe['topic_cluster'].unique()):
         # Get all topics in the current cluster
         cluster_topics = dataframe[dataframe['topic_cluster'] == cluster_label]['topics']
 
-        # Find the most common topic in this cluster
-        most_common_topic = Counter(cluster_topics).most_common(1)[0][0]
+        if topics:
+            cluster_topics = [t for t in cluster_topics if t in topics]
 
-        # Assign this topic as the representative topic for the cluster
+        most_common_topic = Counter(cluster_topics).most_common(1)[0][0]
         clustered_topics.append(most_common_topic)
 
-    # Map cluster labels to representative topics
     cluster_to_topic = {label: topic for label, topic in
                         zip(sorted(dataframe['topic_cluster'].unique()), clustered_topics)}
 
