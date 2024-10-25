@@ -66,7 +66,7 @@ class ArticleGraph:
         pos = nx.random_layout(self.G, seed=42)
         y = {}
         for i, node_type in enumerate(list(self.node_types)):
-            y[node_type] = (i + 1) * 10
+            y[node_type] = (i + 1) * 2
 
         for i, node in dict(self.G.nodes).items():
             pos[i] += [0,y[node["type"]]]
