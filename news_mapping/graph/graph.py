@@ -43,7 +43,9 @@ class ArticleGraph:
         return node_frequencies
 
     def _build_graph(self):
-        """Build the graph based on the dataframe and relationships."""
+        """
+        Build the graph based on the dataframe and relationships.
+        """
         for _, row in self.dataframe.iterrows():
             for relation in self.relationships:
                 source = row[relation["source"]]
@@ -57,19 +59,36 @@ class ArticleGraph:
                 # Add edges
                 self.G.add_edge(source, target, relationship=relationship)
 
-    def plot_graph(self, title:str = None):
-        """Plot the graph with node sizes based on frequency of appearance."""
-        plt.figure(figsize=(14, 14))
+    def plot_graph(self,
+                   title:str = None,
+                   layout: str = "random_layout",
+                   figsize: tuple = (14,14),
+                   show_axis: str = "on"):
+        """
+                Plot the graph with node sizes based on frequency of appearance.
+
+        :param title:
+        :param layout: ["random_layout", "spring_layout", "layered"]
+        :param figsize: tuple
+        :param show_axis: ["off", "on"]
+        :return:
+        """
+        plt.figure(figsize=figsize)
         plt.grid()
 
-        # Position the nodes using the spring layout then shift different node type on the y axis
-        pos = nx.random_layout(self.G, seed=42)
-        y = {}
-        for i, node_type in enumerate(list(self.node_types)):
-            y[node_type] = (i + 1) * 1
+        # Position the nodes according to specified layout
+        pos = nx.random_layout(self.G)
 
-        for i, node in dict(self.G.nodes).items():
-            pos[i] += [0,y[node["type"]]]
+        if layout == "layered":
+            y = {}
+            for i, node_type in enumerate(list(self.node_types)):
+                y[node_type] = (i + 1) * 1.5
+
+            for i, node in dict(self.G.nodes).items():
+                pos[i] += [0,y[node["type"]]]
+        elif layout == "spring_layered":
+            pos = nx.spring_layout(self.G)
+
 
         # Define default colors and shapes
         default_color = "skyblue"
@@ -142,5 +161,5 @@ class ArticleGraph:
         # Show the plot
         graph_title = "Newspaper Articles Graph" if not title else title
         plt.title(graph_title, fontsize=20)
-       # plt.axis("off")
+        plt.axis(show_axis)
         plt.show()
