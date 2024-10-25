@@ -2,6 +2,13 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import json
 
+
+class LayoutError(Exception):
+    """Custom exception for invalid layout types."""
+    def __init__(self, layout):
+        super().__init__(f"Invalid layout type: '{layout}'. Available layouts are 'random_layout' (default),'layered_layout', 'spring_layout', 'triangle_layout'.")
+        self.layout = layout
+
 class ArticleGraph:
     def __init__(self, dataframe, relationships):
         self.G = nx.Graph()
@@ -68,7 +75,7 @@ class ArticleGraph:
                 Plot the graph with node sizes based on frequency of appearance.
 
         :param title:
-        :param layout: ["random_layout", "spring_layout", "layered"]
+        :param layout: ["random_layout", "spring_layout", "layered_layout"]
         :param figsize: tuple
         :param show_axis: ["off", "on"]
         :return:
@@ -79,15 +86,24 @@ class ArticleGraph:
         # Position the nodes according to specified layout
         pos = nx.random_layout(self.G)
 
-        if layout == "layered":
+        if layout == "layered_layout":
             y = {}
             for i, node_type in enumerate(list(self.node_types)):
                 y[node_type] = (i + 1) * 1.5
 
             for i, node in dict(self.G.nodes).items():
                 pos[i] += [0,y[node["type"]]]
-        elif layout == "spring_layered":
+        elif layout == "spring_layout":
             pos = nx.spring_layout(self.G)
+        elif layout == "triangle_layout":
+            shift_nt = {}
+            shifts = [[-1,1],[1,1],[0,-1]]
+            for i, node_type in enumerate(list(self.node_types)):
+                shift_nt[node_type] = shifts[i]
+            for i, node in dict(self.G.nodes).items():
+                pos[i] += [0, shift_nt[node["type"]]]
+        elif:
+            raise(LayoutError)
 
 
         # Define default colors and shapes
