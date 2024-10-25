@@ -11,7 +11,11 @@ from news_mapping.data.wrangler import (
 from news_mapping.text_analysis.utils import (
     evaluate_string,
     extract_inside_braces,
+    filter_newspapers,
+    map_incomplete_to_full_names
 )
+
+from news_mapping.clustering.clustering import cluster_topics
 
 
 class NewsProcess:
@@ -29,7 +33,7 @@ class NewsProcess:
             serpapi_key: str,
             groq_api_key: str,
             sources: list,
-            topics: list,
+            topics: list = None,
             start_date: str = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m-%d'),
             end_date: str = datetime.today().strftime('%Y-%m-%d'),
             model: str = "mixtral-8x7b-32768"
@@ -43,7 +47,7 @@ class NewsProcess:
         self.model = model
         self.query = query
 
-    def scrape_articles(self):
+    def scrape_articles(self) ->  pd.DataFrame:
         """
         Retrieve latest batch of articles from Google News, if scrape_new = True, then scrape. new batch to be
         added to the currently available batch.
@@ -67,7 +71,13 @@ class NewsProcess:
             ]
         dataframe["newspaper"] = dataframe["newspaper"].apply(lambda x: x["name"])
 
-        return dataframe[["title", "newspaper", "link", "date"]]
+        dataframe = filter_newspapers(dataframe, self.sources)
+
+        dataframe = dataframe[["title", "newspaper", "link", "date"]]
+        dataframe.reset_index(drop=True)
+
+        return dataframe
+
 
     def process_articles(self, dataframe: pd.DataFrame):
         """
@@ -75,18 +85,22 @@ class NewsProcess:
         output for relevant use.
         """
 
-        dataframe["text"] = dataframe["link"].apply(
+        # Progress bar for scraping text from URLs
+        dataframe["text"] = dataframe["link"].progress_apply(
             lambda url: scrape_url(url=url, clean_with_genai=False)
         )
+
         dataframe = dataframe[
             dataframe["text"].astype(str).apply(len) < 15000
-        ].reset_index(drop=True)
-        dataframe["text_summary"] = dataframe["text"].apply(
+            ].reset_index(drop=True)
+
+        dataframe["text_summary"] = dataframe["text"].progress_apply(
             lambda text: summarize_text(
                 text=text, api_key=self.GROQ_API_KEY, model=self.model
             )
         )
-        dataframe["topics_persons"] = dataframe["text_summary"].apply(
+
+        dataframe["topics_persons"] = dataframe["text_summary"].progress_apply(
             lambda text: obtain_topics_and_person(
                 text=text,
                 api_key=self.GROQ_API_KEY,
@@ -94,13 +108,63 @@ class NewsProcess:
                 model=self.model,
             )
         )
+
         dataframe["topics_persons"] = (
-            dataframe["topics_persons"].apply(extract_inside_braces).apply(evaluate_string)
+            dataframe["topics_persons"].progress_apply(extract_inside_braces).apply(evaluate_string)
         )
 
         dataframe = dataframe[(dataframe["topics_persons"] != {})]
 
-        dataframe['topics'] = dataframe['topics_persons'].apply(lambda x: x['topic'])
-        dataframe['persons'] = dataframe['topics_persons'].apply(lambda x: x['persons'])
+        # Separate 'topics' and 'persons' into their own columns
+        dataframe["topics"] = dataframe["topics_persons"].apply(lambda x: x["topic"])
+        dataframe["persons"] = dataframe["topics_persons"].apply(lambda x: x["persons"])
+
+        dataframe = dataframe[['title', 'newspaper', 'link', 'date', 'text_summary', 'topics', 'persons']]
+
+        # Cluster topics to avoid extremely similar topics
+        dataframe = cluster_topics(dataframe, self.topics)
+
+        # Map duplicated names into single one (e.g. when only surname is given)
+        dataframe = dataframe.explode("persons")
+        dataframe["persons"] = map_incomplete_to_full_names(dataframe["persons"])
+        dataframe.groupby(['title', 'newspaper', 'link',
+                           'date', 'text_summary', 'topics'], as_index=False).agg([{"persons": list}])
 
         return dataframe
+
+
+
+#    def process_articles(self, dataframe: pd.DataFrame):
+#        """
+##       # From scraped articles, summarize them, obtain topics and persons mentioned in the articles, and prepare
+#       # output for relevant use.
+#        """
+#
+#        dataframe["text"] = dataframe["link"].apply(
+#            lambda url: scrape_url(url=url, clean_with_genai=False)
+#        )
+#        dataframe = dataframe[
+#           dataframe["text"].astype(str).apply(len) < 15000
+#        ].reset_index(drop=True)
+#        dataframe["text_summary"] = dataframe["text"].apply(
+#            lambda text: summarize_text(
+#                text=text, api_key=self.GROQ_API_KEY, model=self.model
+#            )
+#        )
+#        dataframe["topics_persons"] = dataframe["text_summary"].apply(
+#            lambda text: obtain_topics_and_person(
+#                text=text,
+#                api_key=self.GROQ_API_KEY,
+#                topics_to_scrape=self.topics,
+ #               model=self.model,
+ #           )
+ #       )
+ #       dataframe["topics_persons"] = (
+#            dataframe["topics_persons"].apply(extract_inside_braces).apply(evaluate_string)
+#        )
+ #       dataframe = dataframe[(dataframe["topics_persons"] != {})]
+#
+ #       dataframe['topics'] = dataframe['topics_persons'].apply(lambda x: x['topic'])
+ #       dataframe['persons'] = dataframe['topics_persons'].apply(lambda x: x['persons'])
+#
+#        return dataframe
