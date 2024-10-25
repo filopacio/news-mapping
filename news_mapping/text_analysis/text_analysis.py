@@ -133,7 +133,7 @@ class NewsProcess:
         dataframe["persons"] = dataframe["persons"].astype(str)
         dataframe["persons"] = map_incomplete_to_full_names(dataframe["persons"])
         dataframe = dataframe.groupby(["title", "newspaper", "link",
-                                       "date", "text", "topics"], as_index=False).agg([{"persons": list}])
+                                       "date", "text", "topics"], as_index=False).agg({"persons": list})
 
         return dataframe
 
