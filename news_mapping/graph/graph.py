@@ -62,8 +62,14 @@ class ArticleGraph:
         plt.figure(figsize=(14, 14))
         plt.grid()
 
-        # Position the nodes using the spring layout
-        pos = nx.spring_layout(self.G, seed=42)
+        # Position the nodes using the spring layout then shift different node type on the y axis
+        pos = nx.random_layout(self.G, seed=42)
+        y = {}
+        for i, node_type in enumerate(list(self.node_types)):
+            y[node_type] = (i + 1) * 10
+
+        for i, node in dict(self.G.nodes).items():
+            pos[i] += [0,y[node["type"]]]
 
         # Define default colors and shapes
         default_color = "skyblue"
@@ -136,5 +142,5 @@ class ArticleGraph:
         # Show the plot
         graph_title = "Newspaper Articles Graph" if not title else title
         plt.title(graph_title, fontsize=20)
-        plt.axis("off")
+       # plt.axis("off")
         plt.show()
