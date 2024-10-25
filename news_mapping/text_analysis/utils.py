@@ -39,4 +39,43 @@ def additional_filter(dataframe: pd.DataFrame, match_words: list) -> pd.DataFram
     )
     return dataframe
 
+def filter_newspapers(dataframe: pd.DataFrame, accepted_newspapers: list) -> pd.DataFrame:
+    """
+    """
+    accepted_words_sets = [set(name.lower().split()) for name in accepted_newspapers]
 
+    def has_common_words(news_name):
+        news_words = set(news_name.lower().split())
+        return any(news_words & accepted_set for accepted_set in accepted_words_sets)
+
+    return dataframe[dataframe["newspaper"].apply(has_common_words)]
+
+
+def map_incomplete_to_full_names(names) -> list:
+    """
+    """
+    surname_to_fullname = {}
+
+    # First pass: collect full names
+    for name in names:
+        parts = name.strip().split()
+        if len(parts) >= 2:
+            # Full name case (first and last name)
+            surname = parts[-1]  # Last part is the surname
+            surname_to_fullname[surname] = name  # Map surname to full name
+
+    # Second pass: replace incomplete names with full names when possible
+    mapped_names = []
+    for name in names:
+        parts = name.strip().split()
+        if len(parts) == 1:
+            # Only surname provided
+            surname = parts[0]
+            # Replace with full name if found
+            full_name = surname_to_fullname.get(surname, name)
+            mapped_names.append(full_name)
+        else:
+            # Full name already provided
+            mapped_names.append(name)
+
+    return mapped_names
