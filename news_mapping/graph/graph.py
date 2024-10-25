@@ -89,7 +89,7 @@ class ArticleGraph:
 
         # Scale node sizes, ensuring a minimum size of 300
         node_sizes = {
-            node: 300 + (frequency / max_frequency) * 2000
+            node: 200 + (frequency / max_frequency) * 2000
             for node, frequency in self.node_frequencies.items()
         }
 
@@ -105,7 +105,7 @@ class ArticleGraph:
 
             # Get the sizes for the corresponding nodes
             sizes = [
-                node_sizes.get(node, 300) for node in nodelist
+                node_sizes.get(node, 200) for node in nodelist
             ]  # Default to 300 if no size
 
             nx.draw_networkx_nodes(
@@ -125,7 +125,7 @@ class ArticleGraph:
 
         # Draw the labels
         nx.draw_networkx_labels(
-            self.G, pos, font_size=12, font_color="black", font_weight="bold"
+            self.G, pos, font_size=6, font_color="black", font_weight="bold"
         )
 
         # Draw edge labels (relationships)
