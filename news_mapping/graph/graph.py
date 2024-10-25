@@ -97,7 +97,7 @@ class ArticleGraph:
             pos = nx.spring_layout(self.G)
         elif layout == "triangle_layout":
             shift_nt = {}
-            shifts = [[-1,1],[1,1],[0,-1]]
+            shifts = [[-1, -1], [1,-1], [0,1]]
             for i, node_type in enumerate(list(self.node_types)):
                 shift_nt[node_type] = shifts[i]
             for i, node in dict(self.G.nodes).items():
