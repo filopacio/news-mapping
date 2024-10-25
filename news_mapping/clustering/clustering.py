@@ -63,13 +63,19 @@ def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
     Returns:
         dataframe: The updated dataframe with clustered topics.
     """
+    # Step 1: Vectorize the topics
     topic_list = dataframe['topics'].tolist()
-    topic_vectors = vectorize_topics(topic_list)  # Assumed to be a function that returns vectorized topics
+    topic_vectors = np.array(vectorize_topics(topic_list))  # Assumed to be a function that returns vectorized topics
 
+    # Step 2: Check if predefined topics are provided
     if topics:
-        predefined_vectors = vectorize_topics(topics)  # Vectorize predefined topics as well
-        all_vectors = topic_vectors + predefined_vectors  # Combine predefined topics with original topics
+        # Vectorize predefined topics
+        predefined_vectors = np.array(vectorize_topics(topics))  # Vectorize predefined topics as well
 
+        # Combine predefined topics with original topics
+        all_vectors = np.concatenate((topic_vectors, predefined_vectors), axis=0)
+
+        # Perform K-means clustering using predefined topics as initial centroids
         num_clusters = len(topics)
         kmeans = KMeans(n_clusters=num_clusters, init=predefined_vectors,
                         n_init=1)  # Use predefined topics as centroids
@@ -85,16 +91,20 @@ def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
     clustered_topics = []
     for cluster_label in sorted(dataframe['topic_cluster'].unique()):
         if topics:
+            # Assign the predefined topic as the representative for each cluster
             representative_topic = topics[cluster_label]
         else:
+            # If no topics provided, find the most common topic within the cluster
             cluster_topics = dataframe[dataframe['topic_cluster'] == cluster_label]['topics']
             representative_topic = Counter(cluster_topics).most_common(1)[0][0]
 
         clustered_topics.append(representative_topic)
 
+    # Map cluster labels to representative topics
     cluster_to_topic = {label: topic for label, topic in
                         zip(sorted(dataframe['topic_cluster'].unique()), clustered_topics)}
 
+    # Update 'topics' column with representative topics
     dataframe['topics'] = dataframe['topic_cluster'].map(cluster_to_topic)
 
     return dataframe
