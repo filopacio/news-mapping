@@ -102,7 +102,7 @@ class ArticleGraph:
                 shift_nt[node_type] = shifts[i]
             for i, node in dict(self.G.nodes).items():
                 pos[i] += [0, shift_nt[node["type"]]]
-        elif:
+        else:
             raise(LayoutError)
 
 
