@@ -84,8 +84,8 @@ class ArticleGraph:
         plt.grid()
 
         # Position the nodes according to specified layout
-        pos = nx.random_layout(self.G)
-
+        if layout == "random_layout":
+            pos = nx.random_layout(self.G)
         if layout == "layered_layout":
             y = {}
             for i, node_type in enumerate(list(self.node_types)):
