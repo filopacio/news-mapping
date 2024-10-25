@@ -1,4 +1,5 @@
 import pandas as pd
+from tqdm import tqdm
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -17,6 +18,7 @@ from news_mapping.text_analysis.utils import (
 
 from news_mapping.clustering.clustering import cluster_topics
 
+tqdm.pandas()
 
 class NewsProcess:
     """
@@ -74,7 +76,7 @@ class NewsProcess:
         dataframe = filter_newspapers(dataframe, self.sources)
 
         dataframe = dataframe[["title", "newspaper", "link", "date"]]
-        dataframe.reset_index(drop=True)
+        dataframe = dataframe.reset_index(drop=True)
 
         return dataframe
 
