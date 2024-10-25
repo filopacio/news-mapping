@@ -104,7 +104,7 @@ class NewsProcess:
        # )
 
         print("Extracting Topics And Persons From Articles")
-        dataframe["topics_persons"] = dataframe["text_summary"].progress_apply(
+        dataframe["topics_persons"] = dataframe["text"].progress_apply(
             lambda text: obtain_topics_and_person(
                 text=text,
                 api_key=self.GROQ_API_KEY,
@@ -114,7 +114,7 @@ class NewsProcess:
         )
 
         dataframe["topics_persons"] = (
-            dataframe["topics_persons"].progress_apply(extract_inside_braces).apply(evaluate_string)
+            dataframe["topics_persons"].apply(extract_inside_braces).apply(evaluate_string)
         )
 
         dataframe = dataframe[(dataframe["topics_persons"] != {})]
@@ -123,7 +123,7 @@ class NewsProcess:
         dataframe["topics"] = dataframe["topics_persons"].apply(lambda x: x["topic"])
         dataframe["persons"] = dataframe["topics_persons"].apply(lambda x: x["persons"])
 
-        dataframe = dataframe[["title", "newspaper", "link", "date", "text_summary", "topics", "persons"]]
+        dataframe = dataframe[["title", "newspaper", "link", "date", "text", "topics", "persons"]]
 
         # Cluster topics to avoid extremely similar topics
         dataframe = cluster_topics(dataframe, self.topics)
@@ -133,7 +133,7 @@ class NewsProcess:
         dataframe["persons"] = dataframe["persons"].astype(str)
         dataframe["persons"] = map_incomplete_to_full_names(dataframe["persons"])
         dataframe = dataframe.groupby(["title", "newspaper", "link",
-                                       "date", "text_summary", "topics"], as_index=False).agg([{"persons": list}])
+                                       "date", "text", "topics"], as_index=False).agg([{"persons": list}])
 
         return dataframe
 
