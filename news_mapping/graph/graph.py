@@ -103,7 +103,7 @@ class ArticleGraph:
             for i, node in dict(self.G.nodes).items():
                 pos[i] += shift_nt[node["type"]]
         else:
-            raise(LayoutError)
+            raise LayoutError(layout)
 
 
         # Define default colors and shapes
