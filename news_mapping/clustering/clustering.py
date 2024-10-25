@@ -54,7 +54,7 @@ def hdbscan_clustering(topic_vectors):
 def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
     """
     Perform clustering on the topics using K-means if topics are provided, else HDBSCAN.
-    Then update the 'topics' column with the representative topic of each cluster.
+    When topics are provided, force them to become the centroids for clustering.
 
     Args:
         dataframe: A pandas dataframe containing the topics column.
@@ -64,32 +64,37 @@ def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
         dataframe: The updated dataframe with clustered topics.
     """
     topic_list = dataframe['topics'].tolist()
+    topic_vectors = vectorize_topics(topic_list)  # Assumed to be a function that returns vectorized topics
 
-    topic_vectors = vectorize_topics(topic_list)
+    if topics:
+        predefined_vectors = vectorize_topics(topics)  # Vectorize predefined topics as well
+        all_vectors = topic_vectors + predefined_vectors  # Combine predefined topics with original topics
 
-    if topics is not None:
-        # Use K-means clustering if predefined topics are provided
-        num_clusters = len(topics) if len(topics) < len(topic_list) else len(topic_list)
-        dataframe['topic_cluster'] = kmeans_clustering(topic_vectors, num_clusters)
+        num_clusters = len(topics)
+        kmeans = KMeans(n_clusters=num_clusters, init=predefined_vectors,
+                        n_init=1)  # Use predefined topics as centroids
+        all_labels = kmeans.fit_predict(all_vectors)
+
+        # Extract labels for original topics only
+        dataframe['topic_cluster'] = all_labels[:len(topic_list)]
     else:
         # Use HDBSCAN clustering if no predefined topics
         dataframe['topic_cluster'] = hdbscan_clustering(topic_vectors)
 
+    # Step 3: Assign the predefined topics as the cluster representatives
     clustered_topics = []
     for cluster_label in sorted(dataframe['topic_cluster'].unique()):
-        # Get all topics in the current cluster
-        cluster_topics = dataframe[dataframe['topic_cluster'] == cluster_label]['topics']
-
         if topics:
-            cluster_topics = [t for t in cluster_topics if t in topics]
+            representative_topic = topics[cluster_label]
+        else:
+            cluster_topics = dataframe[dataframe['topic_cluster'] == cluster_label]['topics']
+            representative_topic = Counter(cluster_topics).most_common(1)[0][0]
 
-        most_common_topic = Counter(cluster_topics).most_common(1)[0][0]
-        clustered_topics.append(most_common_topic)
+        clustered_topics.append(representative_topic)
 
     cluster_to_topic = {label: topic for label, topic in
                         zip(sorted(dataframe['topic_cluster'].unique()), clustered_topics)}
 
-    # Update 'topics' column with representative topics
     dataframe['topics'] = dataframe['topic_cluster'].map(cluster_to_topic)
 
     return dataframe
