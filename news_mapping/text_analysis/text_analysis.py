@@ -131,7 +131,7 @@ class NewsProcess:
         # Map duplicated names into single one (e.g. when only surname is given)
         dataframe = dataframe.explode("persons")
         dataframe["persons"] = dataframe["persons"].astype(str)
-        dataframe['column_name'] = dataframe['column_name'].str.title()
+        dataframe["persons"] = dataframe["persons"].str.title()
         dataframe["persons"] = map_incomplete_to_full_names(dataframe["persons"])
         dataframe = dataframe.groupby(["title", "newspaper", "link",
                                        "date", "text", "topics"], as_index=False).agg({"persons": list})
