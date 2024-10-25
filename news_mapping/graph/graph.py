@@ -1,6 +1,5 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import json
 
 
 class LayoutError(Exception):
@@ -8,6 +7,7 @@ class LayoutError(Exception):
     def __init__(self, layout):
         super().__init__(f"Invalid layout type: '{layout}'. Available layouts are 'random_layout' (default),'layered_layout', 'spring_layout', 'triangle_layout'.")
         self.layout = layout
+
 
 class ArticleGraph:
     def __init__(self, dataframe, relationships):
@@ -101,7 +101,7 @@ class ArticleGraph:
             for i, node_type in enumerate(list(self.node_types)):
                 shift_nt[node_type] = shifts[i]
             for i, node in dict(self.G.nodes).items():
-                pos[i] += [0, shift_nt[node["type"]]]
+                pos[i] += shift_nt[node["type"]]
         else:
             raise(LayoutError)
 
