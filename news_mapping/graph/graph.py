@@ -57,9 +57,10 @@ class ArticleGraph:
                 # Add edges
                 self.G.add_edge(source, target, relationship=relationship)
 
-    def plot_graph(self):
+    def plot_graph(self, title:str = None):
         """Plot the graph with node sizes based on frequency of appearance."""
         plt.figure(figsize=(14, 14))
+        plt.grid()
 
         # Position the nodes using the spring layout
         pos = nx.spring_layout(self.G, seed=42)
@@ -133,6 +134,7 @@ class ArticleGraph:
         )
 
         # Show the plot
-        plt.title("Newspaper Articles Graph", fontsize=20)
+        graph_title = "Newspaper Articles Graph" if not title else title
+        plt.title(graph_title, fontsize=20)
         plt.axis("off")
         plt.show()
