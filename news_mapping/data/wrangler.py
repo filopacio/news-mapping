@@ -38,13 +38,15 @@ def obtain_topics_and_person(
                 "content": f"""
 Sei un analista di notizie. Dal testo fornito, che è un articolo di notizie ottenuto tramite scraping di HTML,
 devi individuare:
-1. L'UNICO argomento principale discusso nell'articolo.
-2. Tutti i nomi propri di personaggi pubblici menzionati.
+1. Il testo dell'articolo, escludendo tutte le altre parole appartenenti ad un sito web ma non all'articolo.
+2. L'UNICO argomento principale discusso nell'articolo.
+3. Tutti i nomi propri di personaggi pubblici menzionati.
 Non aggiungere nessun altro commento o testo oltre all'oggetto JSON. Segui **rigorosamente** queste istruzioni.
 
 Il risultato dovrà essere **esclusivamente** un oggetto JSON con la seguente struttura:
 
 {{
+  "text": "<string> (SOLO il testo dell'articolo, separato dal resto delle parole non appartenenti all'articolo)",
   "topic": "<string> (unico argomento principale dall'articolo, lasciarlo vuoto se nessun argomento è valido)",
   "persons": ["<string> (lista dei nomi propri di personaggi pubblici menzionati, se presenti, altrimenti lista vuota)"]
 }}
