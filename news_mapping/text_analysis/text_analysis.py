@@ -120,9 +120,10 @@ class NewsProcess:
         dataframe = dataframe[(dataframe["topics_persons"] != {})]
 
         # Separate 'topics' and 'persons' into their own columns
-        dataframe["text"] = dataframe["topics_persons"].apply(lambda x: x["text"])
-        dataframe["topics"] = dataframe["topics_persons"].apply(lambda x: x["topic"])
-        dataframe["persons"] = dataframe["topics_persons"].apply(lambda x: x["persons"])
+        dataframe["text"] = dataframe["topics_persons"].apply(lambda x: x["text"] if x is not None else x)
+        dataframe["topics"] = dataframe["topics_persons"].apply(lambda x: x["topic"] if x is not None else x)
+        dataframe["persons"] = dataframe["topics_persons"].apply(lambda x: x["persons"] if x is not None else x)
+
 
         dataframe = dataframe[["title", "newspaper", "link", "date", "text", "topics", "persons"]]
 
