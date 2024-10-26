@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 from news_mapping.data.scraper import google_news_articles, scrape_url
 from news_mapping.data.wrangler import (
     obtain_topics_and_person,
- #   summarize_text,
+    summarize_text,
 )
 
 from news_mapping.text_analysis.utils import (
@@ -96,12 +96,12 @@ class NewsProcess:
             dataframe["text"].astype(str).apply(len) < 15000
             ].reset_index(drop=True)
 
-       # print("Summarizing Articles")
-       # dataframe["text_summary"] = dataframe["text"].progress_apply(
-       #     lambda text: summarize_text(
-       #         text=text, api_key=self.GROQ_API_KEY, model=self.model
-       #     )
-       # )
+        print("Summarizing Articles")
+        dataframe["text"] = dataframe["text"].progress_apply(
+            lambda text: summarize_text(
+                text=text, api_key=self.GROQ_API_KEY, model=self.model
+            )
+        )
 
         print("Extracting Topics And Persons From Articles")
         dataframe["topics_persons"] = dataframe["text"].progress_apply(
