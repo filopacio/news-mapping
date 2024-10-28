@@ -39,7 +39,7 @@ class NewsProcess:
             start_date: str = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m-%d'),
             end_date: str = datetime.today().strftime('%Y-%m-%d'),
             model: str = "mixtral-8x7b-32768",
-            batch_size: int = 10
+            clean_with_llm: bool = True,
     ):
         self.SERPAPI_KEY = serpapi_key
         self.GROQ_API_KEY = groq_api_key
@@ -49,6 +49,7 @@ class NewsProcess:
         self.end_date = end_date
         self.model = model
         self.query = query
+        self.clean_with_llm = clean_with_llm
 
     def scrape_articles(self) ->  pd.DataFrame:
         """
@@ -90,7 +91,7 @@ class NewsProcess:
 
         print("Scraping And Cleaning URLs")
         dataframe["text"] = dataframe["link"].progress_apply(
-            lambda url: scrape_url(url=url, api_key=self.GROQ_API_KEY, model=self.model, clean_with_genai=False)
+            lambda url: scrape_url(url=url, api_key=self.GROQ_API_KEY, model=self.model, clean_with_llm=self.clean_with_llm)
         )
 
         dataframe = dataframe[
