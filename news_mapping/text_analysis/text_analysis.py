@@ -49,7 +49,6 @@ class NewsProcess:
         self.end_date = end_date
         self.model = model
         self.query = query
-        self.batch_size = batch_size
 
     def scrape_articles(self) ->  pd.DataFrame:
         """
@@ -83,7 +82,7 @@ class NewsProcess:
         return dataframe
 
 
-    def process_articles(self, dataframe: pd.DataFrame):
+    def process_articles(self, dataframe: pd.DataFrame, batch_size: int):
         """
         From scraped articles, summarize them, obtain topics and persons mentioned in the articles, and prepare
         output for relevant use.
@@ -104,7 +103,7 @@ class NewsProcess:
                                                  query=self.query,
                                                  topics_to_scrape=self.topics,
                                                  model=self.model,
-                                                 batch_size=self.batch_size
+                                                 batch_size=batch_size
                                                  )
 
         dataframe = dataframe.dropna(subset="newspaper_topics_persons")
