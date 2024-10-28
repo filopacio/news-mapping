@@ -95,7 +95,8 @@ Data la seguente lista di pagine web di giornali, per ogni articolo, identifica 
  non appartententi all'articolo (come annunci, pubblicità, altri articoli irrilevanti).
 3. Estrai l'argomento principale discusso nel testo (deve essere uno e uno solo).
 4. Identifica tutti i nomi propri di persone menzionate nel testo.
-Per ogni articolo, restituisci i risultati sotto forma di lista di JSON come descritto qui sotto:
+Per ogni articolo, restituisci i risultati sotto forma di lista di JSON, la tua risposta dovrà iniziare con '[' e finire 
+con ']', come descritto qui sotto:
 [<{{
   "newspaper": "<nome_del_giornale>",
   "text": ""<il testo dell'artiolo riguardante {query}>

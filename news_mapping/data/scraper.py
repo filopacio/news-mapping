@@ -94,6 +94,6 @@ def scrape_url(
             return chat_completion.choices[0].message.content
         except Exception as e:
             print(f"Error during Groq API call: {e}")
-            return None
+            return ""
     else:
         return text
