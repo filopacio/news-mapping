@@ -99,14 +99,12 @@ class NewsProcess:
             ].reset_index(drop=True)
 
         print("Extracting Topics And Persons From Articles")
-        dataframe["newspaper_topics_persons"] = get_newspaper_topics_persons(
-                                                        dataframe=dataframe,
-                                                        api_key=self.GROQ_API_KEY,
-                                                        topics_to_scrape=self.topics,
-                                                        model=self.model,
-                                                        batch_size=self.batch_size
-                                                        )
-
+        dataframe = get_newspaper_topics_persons(dataframe=dataframe,
+                                                 api_key=self.GROQ_API_KEY,
+                                                 topics_to_scrape=self.topics,
+                                                 model=self.model,
+                                                 batch_size=self.batch_size
+                                                 )
 
         dataframe = dataframe.dropna(subset="newspaper_topics_persons")
 

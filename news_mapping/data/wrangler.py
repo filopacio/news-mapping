@@ -22,7 +22,7 @@ def get_newspaper_topics_persons(
     """
 
     # Initialize the new column
-    dataframe["newspaper_topics_persons"] = ""  # Avoiding empty strings
+    results = []
 
     for i in tqdm(range(0, len(dataframe), batch_size)):
         concatenated_text = ""
@@ -46,8 +46,9 @@ def get_newspaper_topics_persons(
         result = extract_inside_braces(result)
         result = evaluate_string(result)
 
-        for j in range(len(result)):
-            dataframe.at[i + j, "newspaper_topics_persons"] = result[j]
+        results += result
+
+    dataframe["newspaper_topics_persons"] = results
 
     return dataframe
 
@@ -56,7 +57,7 @@ def retrieve_from_articles(
     text: str,
     api_key: str,
     topics_to_scrape: None or list,
-    max_tokens: int = 1024,
+    max_tokens: int = 8000,
     model: str = "llama3-70b-8192",
 ) -> str:
     """
@@ -127,7 +128,7 @@ def summarize_text(
         str: The summarized text.
     """
     time.sleep(
-        1.5
+        0.8
     )  # to avoid reaching maximum requests per seconds and tokens per minute
     client = Groq(api_key=api_key)
     chat_completion = client.chat.completions.create(
