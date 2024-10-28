@@ -76,11 +76,13 @@ def scrape_url(
                     },
                     {
                         "role": "user",
-                        "content": f"""Il tuo compito è pulire una stringa che contiene il titolo, l'autore e l'articolo di un sito web estratto.
-                        Il tuo obiettivo è:
+                        "content": f"""Il tuo compito è pulire una stringa che contiene il titolo, l'autore e l'articolo 
+                        di un sito web estratto. Il tuo obiettivo è:
                         1. Rimuovere tutto il rumore irrilevante (annunci, pubblicità, ecc.).
                         2. Restituire una versione pulita dell'articolo che includa solo il titolo, l'autore e il contenuto.
                         3. Mantieni il formato come: Titolo, Autore e Corpo dell'Articolo.
+                        NON aggiungere nessun'altra parola di nessun tipo al tuo riassunto!! E' molto importante che 
+                        segui attentamente queste istruzioni.
                         Pulisci il seguente testo: {text}
                         """
                     }

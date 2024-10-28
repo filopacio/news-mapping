@@ -94,7 +94,7 @@ Data la seguente lista di articoli di giornale, per ogni articolo, identifica qu
 Per ogni articolo, restituisci i risultati sotto forma di lista di JSON come descritto qui sotto:
 [<{{
   "newspaper": "<nome_del_giornale>",
-  "topics": "<argomento_principale>",
+  "topics": "<argomento_principale in italiano>",
   "persons": ["<nome_persona1>", "<nome_persona2>", ...]
 }}>, <json 2>, ...]
 
