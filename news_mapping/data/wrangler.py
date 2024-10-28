@@ -1,7 +1,6 @@
 import time
 from groq import Groq
-from tqdm import tqdm
-import pandas as pd
+
 
 from news_mapping.text_analysis.utils import extract_inside_braces, evaluate_string
 
@@ -12,6 +11,7 @@ from tqdm import tqdm
 def get_newspaper_topics_persons(
         dataframe: pd.DataFrame,
         api_key: str,
+        query: str,
         topics_to_scrape: None or list,
         model: str,
         batch_size: int = 10
@@ -38,6 +38,7 @@ def get_newspaper_topics_persons(
         result = retrieve_from_articles(
             text=concatenated_text,
             api_key=api_key,
+            query=query,
             topics_to_scrape=topics_to_scrape,
             model=model
         )
@@ -56,6 +57,7 @@ def get_newspaper_topics_persons(
 def retrieve_from_articles(
     text: str,
     api_key: str,
+    query: str,
     topics_to_scrape: None or list,
     max_tokens: int = 8000,
     model: str = "llama3-70b-8192",
@@ -70,7 +72,7 @@ def retrieve_from_articles(
     :return: the LLM call output.
     """
     time.sleep(
-        0.8
+        1
     )  # to avoid reaching maximum requests per seconds and tokens per minute
     client = Groq(api_key=api_key)
 
@@ -87,13 +89,16 @@ def retrieve_from_articles(
             {
                 "role": "user",
                 "content": f"""
-Data la seguente lista di articoli di giornale, per ogni articolo, identifica quanto segue:
+Data la seguente lista di pagine web di giornali, per ogni articolo, identifica quanto segue:
 1. Il nome del giornale che ha scritto l'articolo
-1. Estrai l'argomento principale discusso nel testo (deve essere uno e uno solo).
-2. Identifica tutti i nomi propri di persone menzionate nel testo.
+2. Il testo dell'articolo nella pagina riguardante {query}, rimuovendo tutte le alte parole della pagina web
+ non appartententi all'articolo (come annunci, pubblicità, altri articoli irrilevanti).
+3. Estrai l'argomento principale discusso nel testo (deve essere uno e uno solo).
+4. Identifica tutti i nomi propri di persone menzionate nel testo.
 Per ogni articolo, restituisci i risultati sotto forma di lista di JSON come descritto qui sotto:
 [<{{
   "newspaper": "<nome_del_giornale>",
+  "text": ""<il testo dell'artiolo riguardante {query}>
   "topics": "<argomento_principale in italiano>",
   "persons": ["<nome_persona1>", "<nome_persona2>", ...]
 }}>, <json 2>, ...]

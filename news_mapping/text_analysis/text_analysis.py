@@ -91,16 +91,17 @@ class NewsProcess:
 
         print("Scraping And Cleaning URLs")
         dataframe["text"] = dataframe["link"].progress_apply(
-            lambda url: scrape_url(url=url, api_key=self.GROQ_API_KEY, model=self.model, clean_with_genai=True)
+            lambda url: scrape_url(url=url, api_key=self.GROQ_API_KEY, model=self.model, clean_with_genai=False)
         )
 
         dataframe = dataframe[
             dataframe["text"].astype(str).apply(len) < 15000
             ].reset_index(drop=True)
 
-        print("Extracting Topics And Persons From Articles")
+        print("Extracting Topics And Persons From Articles By Batches")
         dataframe = get_newspaper_topics_persons(dataframe=dataframe,
                                                  api_key=self.GROQ_API_KEY,
+                                                 query=self.query,
                                                  topics_to_scrape=self.topics,
                                                  model=self.model,
                                                  batch_size=self.batch_size
