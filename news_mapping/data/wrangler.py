@@ -1,11 +1,61 @@
 import time
 from groq import Groq
+from tqdm import tqdm
+import pandas as pd
+
+from news_mapping.text_analysis.utils import extract_inside_braces, evaluate_string
+
+import pandas as pd
+from tqdm import tqdm
 
 
-def obtain_topics_and_person(
+def get_newspaper_topics_persons(
+        dataframe: pd.DataFrame,
+        api_key: str,
+        topics_to_scrape: None or list,
+        model: str,
+        batch_size: int = 10
+) -> pd.DataFrame:
+    """
+    Concatenates text from the DataFrame every `batch_size` rows and applies
+    the obtain_topics_and_person function to the concatenated text.
+    """
+
+    # Initialize the new column
+    dataframe["newspaper_topics_persons"] = ""  # Avoiding empty strings
+
+    for i in tqdm(range(0, len(dataframe), batch_size)):
+        concatenated_text = ""
+        for j in range(i, min(i + batch_size, i + len(dataframe.iloc[i: i + batch_size, :]))):
+            concatenated_text += f"""
+            ------------------
+            newspaper: {dataframe.loc[j, "newspaper"]}
+            text: {dataframe.loc[j, "text"]}
+            ------------------
+            """
+
+        # Call the external function with the concatenated text
+        result = retrieve_from_articles(
+            text=concatenated_text,
+            api_key=api_key,
+            topics_to_scrape=topics_to_scrape,
+            model=model
+        )
+
+        # Process the result
+        result = extract_inside_braces(result)
+        result = evaluate_string(result)
+
+        for j in range(len(result)):
+            dataframe.at[i + j, "newspaper_topics_persons"] = result[j]
+
+    return dataframe
+
+
+def retrieve_from_articles(
     text: str,
     api_key: str,
-    topics_to_scrape: None,
+    topics_to_scrape: None or list,
     max_tokens: int = 1024,
     model: str = "llama3-70b-8192",
 ) -> str:
@@ -19,7 +69,7 @@ def obtain_topics_and_person(
     :return: the LLM call output.
     """
     time.sleep(
-        1.5
+        0.8
     )  # to avoid reaching maximum requests per seconds and tokens per minute
     client = Groq(api_key=api_key)
 
@@ -36,24 +86,22 @@ def obtain_topics_and_person(
             {
                 "role": "user",
                 "content": f"""
-Sei un analista di notizie. Dal testo fornito, che è un articolo di notizie ottenuto tramite scraping di HTML,
-devi individuare:
-1. Il testo dell'articolo, escludendo tutte le altre parole appartenenti ad un sito web ma non all'articolo.
-2. L'UNICO argomento principale discusso nell'articolo.
-3. Tutti i nomi propri di personaggi pubblici menzionati.
-Non aggiungere nessun altro commento o testo oltre all'oggetto JSON. Segui **rigorosamente** queste istruzioni.
-
-Il risultato dovrà essere **esclusivamente** un oggetto JSON con la seguente struttura:
-
-{{
-  "text": "<string> (SOLO il testo dell'articolo, separato dal resto delle parole non appartenenti all'articolo)",
-  "topic": "<string> (unico argomento principale dall'articolo, lasciarlo vuoto se nessun argomento è valido)",
-  "persons": ["<string> (lista dei nomi propri di personaggi pubblici menzionati, se presenti, altrimenti lista vuota)"]
-}}
+Data la seguente lista di articoli di giornale, per ogni articolo, identifica quanto segue:
+1. Il nome del giornale che ha scritto l'articolo
+1. Estrai l'argomento principale discusso nel testo (deve essere uno e uno solo).
+2. Identifica tutti i nomi propri di persone menzionate nel testo.
+Per ogni articolo, restituisci i risultati sotto forma di lista di JSON come descritto qui sotto:
+[<{{
+  "newspaper": "<nome_del_giornale>",
+  "topics": "<argomento_principale>",
+  "persons": ["<nome_persona1>", "<nome_persona2>", ...]
+}}>, <json 2>, ...]
 
 {topics_string}
+Restituisci solo e soltanto la lista richiesta senza aggiungere nessun altro commento
 
-Ecco il testo: {text}.
+Ecco la lista:
+{text}
 """,
             },
         ],

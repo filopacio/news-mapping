@@ -21,13 +21,28 @@ def evaluate_string(expression):
         print(f"Error evaluating expression '{expression}': {e}")
         return None
 
-def extract_inside_braces(s):
-    start = s.find("{")
-    end = s.find("}")
-    if start >= 0 and end > start:
-        return s[start : end + 1].strip()
+def extract_inside_braces(string: str) -> str:
+    bracket_count = 0
+    start_index = -1
+    end_index = -1
+
+    # Iterate through the string to find the outermost brackets
+    for i, char in enumerate(string):
+        if char == '[':
+            if bracket_count == 0:  # First opening bracket
+                start_index = i
+            bracket_count += 1
+        elif char == ']':
+            bracket_count -= 1
+            if bracket_count == 0:  # Last closing bracket
+                end_index = i + 1  # Include the closing bracket
+                break
+
+    # Extract the substring that contains the list
+    if start_index != -1 and end_index != -1:
+        return string[start_index:end_index]
     else:
-        return None
+        return "No list found."
 
 def additional_filter(dataframe: pd.DataFrame, match_words: list) -> pd.DataFrame:
     """ """

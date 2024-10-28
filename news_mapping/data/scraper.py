@@ -72,18 +72,19 @@ def scrape_url(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a news article scraper and analyzer.",
+                        "content": "Sei un estrattore e analizzatore di articoli di giornale."
                     },
                     {
                         "role": "user",
-                        "content": f"""You are tasked with cleaning a string containing the title, author, and article of a scraped website.
-                   Your goal is to:
-                   1. Remove all irrelevant noise (ads, announcements, etc.).
-                   2. Return a clean version of the article that only includes the title, author, and content.
-                   3. Keep the format as: Title, Author, and Article Body.
-                   Clean the following text: {text}
-                """,
-                    },
+                        "content": f"""Il tuo compito è pulire una stringa che contiene il titolo, l'autore e l'articolo di un sito web estratto.
+                        Il tuo obiettivo è:
+                        1. Rimuovere tutto il rumore irrilevante (annunci, pubblicità, ecc.).
+                        2. Restituire una versione pulita dell'articolo che includa solo il titolo, l'autore e il contenuto.
+                        3. Mantieni il formato come: Titolo, Autore e Corpo dell'Articolo.
+                        Pulisci il seguente testo: {text}
+                        """
+                    }
+                    ,
                 ],
                 model=model,
                 max_tokens=max_tokens,
