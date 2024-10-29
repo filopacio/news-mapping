@@ -2,7 +2,10 @@ import time
 from groq import Groq
 
 
-from news_mapping.text_analysis.utils import extract_inside_braces, evaluate_string
+from news_mapping.text_analysis.utils import (extract_inside_braces,
+                                              evaluate_string,
+                                              calculate_token,
+                                              clean_json_string)
 
 import pandas as pd
 from tqdm import tqdm
@@ -18,36 +21,61 @@ def get_newspaper_topics_persons(
 ) -> pd.DataFrame:
     """
     Concatenates text from the DataFrame every `batch_size` rows and applies
-    the obtain_topics_and_person function to the concatenated text.
+    the obtain_topics_and_person function to the concatenated text. Adjusts
+    `batch_size` dynamically if token count exceeds 8000 tokens.
     """
 
     # Initialize the new column
     results = []
+    max_tokens = 8000
+    total_rows = len(dataframe)
 
-    for i in tqdm(range(0, len(dataframe), batch_size)):
-        concatenated_text = ""
-        for j in range(i, min(i + batch_size, i + len(dataframe.iloc[i: i + batch_size, :]))):
-            concatenated_text += f"""
-            ------------------
-            newspaper: {dataframe.loc[j, "newspaper"]}
-            text: {dataframe.loc[j, "text"]}
-            ------------------
-            """
+    # Initialize tqdm with the total length of the dataframe
+    with tqdm(total=total_rows, desc="Processing articles") as pbar:
+        i = 0
+        while i < total_rows:
+            current_batch_size = batch_size
+            token_total = max_tokens + 1  # Start above limit to enter the loop
 
-        # Call the external function with the concatenated text
-        result = retrieve_from_articles(
-            text=concatenated_text,
-            api_key=api_key,
-            query=query,
-            topics_to_scrape=topics_to_scrape,
-            model=model
-        )
+            # Dynamically adjust batch size if token count is too high
+            while token_total > max_tokens and current_batch_size > 1:
+                concatenated_text = ""
+                for j in range(i, min(i + current_batch_size, total_rows)):
+                    concatenated_text += f"""
+                    ------------------
+                    newspaper: {dataframe.loc[j, "newspaper"]}
+                    text: {dataframe.loc[j, "text"]}
+                    ------------------
+                    """
 
-        # Process the result
-        result = extract_inside_braces(result)
-        result = evaluate_string(result)
+                # Calculate token count of the concatenated batch
+                token_total = calculate_token(concatenated_text)
 
-        results += result
+                # Reduce batch size if over the limit
+                if token_total > max_tokens:
+                    current_batch_size = max(1, current_batch_size // 2)
+
+            # Call the external function with the concatenated text
+            result = retrieve_from_articles(
+                text=concatenated_text,
+                api_key=api_key,
+                query=query,
+                topics_to_scrape=topics_to_scrape,
+                model=model
+            )
+
+            # Process the result
+            result = extract_inside_braces(result)
+            result = clean_json_string(result)
+            result = evaluate_string(result)
+
+            results += result
+
+            # Update tqdm progress by the final batch size used
+            pbar.update(current_batch_size)
+
+            # Increment `i` by the final batch size used
+            i += current_batch_size
 
     dataframe["newspaper_topics_persons"] = results
 

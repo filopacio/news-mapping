@@ -1,4 +1,5 @@
 import pandas as pd
+import tiktoken
 
 def contains_any_word(row, words):
     return any(word in row.split() for word in words)
@@ -94,3 +95,26 @@ def map_incomplete_to_full_names(names) -> list:
             mapped_names.append(name)
 
     return mapped_names
+
+
+def calculate_token(string: str) -> int:
+    enc = tiktoken.get_encoding("o200k_base")
+    return len(enc.encode(string))
+
+
+def clean_json_string(input_string):
+    replacements = {
+        '‘': "'",
+        '’': "'",
+        '“': '"',
+        '”': '"',
+        '\u00A0': ' ',
+        '\u200B': ''
+    }
+
+    for old, new in replacements.items():
+        input_string = input_string.replace(old, new)
+
+    input_string = ''.join(c for c in input_string if ord(c) >= 32)
+
+    return input_string
