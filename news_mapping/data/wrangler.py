@@ -37,8 +37,7 @@ def get_newspaper_topics_persons(
             current_batch_size = batch_size
             token_total = max_tokens + 1  # Start above limit to enter the loop
 
-            # Dynamically adjust batch size if token count is too high
-            while token_total > max_tokens and current_batch_size > 1:
+            while token_total > max_tokens and current_batch_size >= 1:
                 concatenated_text = ""
                 for j in range(i, min(i + current_batch_size, total_rows)):
                     concatenated_text += f"""
@@ -48,14 +47,11 @@ def get_newspaper_topics_persons(
                     ------------------
                     """
 
-                # Calculate token count of the concatenated batch
                 token_total = calculate_token(concatenated_text)
 
-                # Reduce batch size if over the limit
                 if token_total > max_tokens:
                     current_batch_size = max(1, current_batch_size // 2)
 
-            # Call the external function with the concatenated text
             result = retrieve_from_articles(
                 text=concatenated_text,
                 api_key=api_key,
@@ -64,17 +60,14 @@ def get_newspaper_topics_persons(
                 model=model
             )
 
-            # Process the result
             result = extract_inside_braces(result)
             result = clean_json_string(result)
             result = evaluate_string(result)
 
             results += result
 
-            # Update tqdm progress by the final batch size used
             pbar.update(current_batch_size)
 
-            # Increment `i` by the final batch size used
             i += current_batch_size
 
     dataframe["newspaper_topics_persons"] = results
