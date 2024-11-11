@@ -112,7 +112,6 @@ class NewsProcess:
 
         dataframe = dataframe[(dataframe["topics_persons"] != {})]
 
-        # Separate 'topics' and 'persons' into their own columns
         dataframe["text"] = dataframe["topics_persons"].apply(lambda x: x["text"])
         dataframe["topics"] = dataframe["topics_persons"].apply(lambda x: x["topic"])
         dataframe["persons"] = dataframe["topics_persons"].apply(lambda x: x["persons"])
