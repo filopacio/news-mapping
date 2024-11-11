@@ -33,7 +33,7 @@ def google_news_articles(
 
 def scrape_url(
     url: str,
-    clean_with_llm: bool = True,
+    clean_with_llm: bool = False,
     max_tokens: int = 1024,
     model: str = "llama3-70b-8192",
     api_key: str = None,

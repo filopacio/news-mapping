@@ -88,7 +88,7 @@ class NewsProcess:
 
         print("Scraping URLs")
         dataframe["text"] = dataframe["link"].progress_apply(
-            lambda url: scrape_url(url=url, clean_with_genai=False)
+            lambda url: scrape_url(url=url)
         )
 
         dataframe = dataframe[
