@@ -6,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 from news_mapping.data.scraper import google_news_articles, scrape_url
 from news_mapping.data.wrangler import (
     obtain_topics_and_person,
- #   summarize_text,
 )
 
 from news_mapping.text_analysis.utils import (
@@ -16,7 +15,7 @@ from news_mapping.text_analysis.utils import (
     map_incomplete_to_full_names
 )
 
-from news_mapping.clustering.clustering import cluster_topics
+from news_mapping.clustering.clustering import cluster_topics, cluster_topics_with_llm
 
 tqdm.pandas()
 
@@ -81,7 +80,7 @@ class NewsProcess:
         return dataframe
 
 
-    def process_articles(self, dataframe: pd.DataFrame):
+    def process_articles(self, dataframe: pd.DataFrame, cluster_with_llm: bool = True):
         """
         From scraped articles, summarize them, obtain topics and persons mentioned in the articles, and prepare
         output for relevant use.
@@ -96,18 +95,12 @@ class NewsProcess:
             dataframe["text"].astype(str).apply(len) < 15000
             ].reset_index(drop=True)
 
-       # print("Summarizing Articles")
-       # dataframe["text_summary"] = dataframe["text"].progress_apply(
-       #     lambda text: summarize_text(
-       #         text=text, api_key=self.GROQ_API_KEY, model=self.model
-       #     )
-       # )
-
         print("Extracting Topics And Persons From Articles")
         dataframe["topics_persons"] = dataframe["text"].progress_apply(
             lambda text: obtain_topics_and_person(
                 text=text,
                 api_key=self.GROQ_API_KEY,
+                query=self.query,
                 topics_to_scrape=self.topics,
                 model=self.model,
             )
@@ -120,15 +113,19 @@ class NewsProcess:
         dataframe = dataframe[(dataframe["topics_persons"] != {})]
 
         # Separate 'topics' and 'persons' into their own columns
+        dataframe["text"] = dataframe["topics_persons"].apply(lambda x: x["text"])
         dataframe["topics"] = dataframe["topics_persons"].apply(lambda x: x["topic"])
         dataframe["persons"] = dataframe["topics_persons"].apply(lambda x: x["persons"])
 
+        dataframe = dataframe[dataframe["topics"] != ""]
+
         dataframe = dataframe[["title", "newspaper", "link", "date", "text", "topics", "persons"]]
 
-        # Cluster topics to avoid extremely similar topics
-        dataframe = cluster_topics(dataframe, self.topics)
+        if cluster_with_llm:
+            dataframe = cluster_topics_with_llm(dataframe, self.GROQ_API_KEY, self.model, self.topics)
+        else:
+            dataframe = cluster_topics(dataframe, self.topics)
 
-        # Map duplicated names into single one (e.g. when only surname is given)
         dataframe = dataframe.explode("persons")
         dataframe["persons"] = dataframe["persons"].astype(str)
         dataframe["persons"] = dataframe["persons"].str.title()

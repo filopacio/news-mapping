@@ -1,9 +1,17 @@
 from gensim.models import Word2Vec
 from sklearn.cluster import KMeans
+from groq import Groq
+import pandas as pd
 import hdbscan
 import numpy as np
 from collections import Counter
-import pandas as pd
+
+from news_mapping.text_analysis.utils import (
+    evaluate_string,
+    extract_inside_braces)
+
+from news_mapping.clustering.utils import replace_values_from_dict
+
 
 
 def vectorize_topics(topics: list):
@@ -106,5 +114,51 @@ def cluster_topics(dataframe: pd.DataFrame, topics: list = None):
 
     # Update 'topics' column with representative topics
     dataframe['topics'] = dataframe['topic_cluster'].map(cluster_to_topic)
+
+    return dataframe
+
+def cluster_topics_with_llm(
+        dataframe: pd.DataFrame,
+        api_key: str,
+        model: str,
+        topics: list = None,
+):
+    """
+    """
+    client = Groq(api_key=api_key)
+
+    if topics:
+        topics_string = f"""The labels must belong ABSOLUTELY to one of the following labels: {topics} """
+    else:
+        topics_string = ""
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a news analyzer"},
+            {
+                "role": "user",
+                "content": f"""
+    You are a news analyzer with the task of clustering similar topics of news articles.
+    You have a list of topics, cluster them to put very similar topics into the same cluster.
+
+Here's the list:
+
+{dataframe["topics"].unique()}
+The cluster label must contain some words of the topics in it.
+The output must be ONLY AND EXCLUSIVELY a json file where keys are the cluster label and the value is the list of topics 
+clustered together.
+
+    {topics_string}
+
+    """,
+            },
+        ],
+        model=model,
+    )
+
+    clusters = chat_completion.choices[0].message.content
+    clusters = evaluate_string(extract_inside_braces(clusters))
+
+    dataframe = replace_values_from_dict(dataframe, "topics", clusters)
 
     return dataframe
