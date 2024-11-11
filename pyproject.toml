@@ -24,6 +24,7 @@ gensim = "^4.3.3"
 scikit-learn = "^1.5.2"
 hdbscan = "^0.8.39"
 tqdm = "^4.66.5"
+tiktoken = "^0.8.0"
 
 
 

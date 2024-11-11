@@ -33,7 +33,7 @@ def google_news_articles(
 
 def scrape_url(
     url: str,
-    clean_with_genai: bool = True,
+    clean_with_llm: bool = True,
     max_tokens: int = 1024,
     model: str = "llama3-70b-8192",
     api_key: str = None,
@@ -65,25 +65,28 @@ def scrape_url(
         print(f"Error during HTML parsing: {e}")
         return None
 
-    if clean_with_genai:
+    if clean_with_llm:
         try:
             client = Groq(api_key=api_key)
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a news article scraper and analyzer.",
+                        "content": "Sei un estrattore e analizzatore di articoli di giornale."
                     },
                     {
                         "role": "user",
-                        "content": f"""You are tasked with cleaning a string containing the title, author, and article of a scraped website.
-                   Your goal is to:
-                   1. Remove all irrelevant noise (ads, announcements, etc.).
-                   2. Return a clean version of the article that only includes the title, author, and content.
-                   3. Keep the format as: Title, Author, and Article Body.
-                   Clean the following text: {text}
-                """,
-                    },
+                        "content": f"""Il tuo compito è pulire una stringa che contiene il titolo, l'autore e l'articolo 
+                        di un sito web estratto. Il tuo obiettivo è:
+                        1. Rimuovere tutto il rumore irrilevante (annunci, pubblicità, ecc.).
+                        2. Restituire una versione pulita dell'articolo che includa solo il titolo, l'autore e il contenuto.
+                        3. Mantieni il formato come: Titolo, Autore e Corpo dell'Articolo.
+                        NON aggiungere nessun'altra parola di nessun tipo al tuo riassunto!! E' molto importante che 
+                        segui attentamente queste istruzioni.
+                        Pulisci il seguente testo: {text}
+                        """
+                    }
+                    ,
                 ],
                 model=model,
                 max_tokens=max_tokens,
@@ -91,6 +94,6 @@ def scrape_url(
             return chat_completion.choices[0].message.content
         except Exception as e:
             print(f"Error during Groq API call: {e}")
-            return None
+            return ""
     else:
         return text
