@@ -20,7 +20,7 @@ def evaluate_string(expression):
         return result
     except Exception as e:
         print(f"Error evaluating expression '{expression}': {e}")
-        return [""]
+        return "{}"
 
 def extract_inside_braces(string: str) -> str:
     bracket_count = 0
@@ -43,7 +43,7 @@ def extract_inside_braces(string: str) -> str:
     if start_index != -1 and end_index != -1:
         return string[start_index:end_index]
     else:
-        return "['']"
+        return "{}"
 
 def additional_filter(dataframe: pd.DataFrame, match_words: list) -> pd.DataFrame:
     """ """
