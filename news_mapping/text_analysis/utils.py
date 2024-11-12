@@ -29,11 +29,11 @@ def extract_inside_braces(string: str) -> str:
 
     # Iterate through the string to find the outermost brackets
     for i, char in enumerate(string):
-        if char == '[':
+        if char == '{':
             if bracket_count == 0:  # First opening bracket
                 start_index = i
             bracket_count += 1
-        elif char == ']':
+        elif char == '}':
             bracket_count -= 1
             if bracket_count == 0:  # Last closing bracket
                 end_index = i + 1  # Include the closing bracket
