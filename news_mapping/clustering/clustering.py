@@ -144,7 +144,6 @@ def cluster_topics_with_llm(
 Here's the list:
 
 {dataframe["topics"].unique()}
-The cluster label must contain some words of the topics in it.
 The output must be ONLY AND EXCLUSIVELY a json file where keys are the cluster label and the value is the list of topics 
 clustered together.
 
